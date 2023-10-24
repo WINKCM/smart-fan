@@ -1,0 +1,43 @@
+menu "St7735 config"
+    
+    config ST7735_CONFIG
+        bool "Use st7735 config"
+        default n
+        help
+            Enable st7735 config components
+
+    if ST7735_CONFIG
+        config ST7735_SCREEN_LENGHT
+            int "st7735 screen lenght"
+            default -1
+        config ST7735_SCREEN_WIDE
+            int "st7735 screen wide"
+            default -1
+        config ST7735_SCREEN_DISPLAY_ANGLE
+            int "st7735 screen display angle"
+            default -1
+            help
+			    st7735 screen display angle 0° 90° 180° 270°.
+        config ST7735_SDA_PIN        
+            int "st7735 sda pin"
+            default -1
+        config ST7735_SCL_PIN        
+            int "st7735 scl pin"
+            default -1
+        config ST7735_CS_PIN
+            int "st7735 cs pin"
+            default -1
+        config ST7735_RES_PIN
+            int "st7735 res pin"
+            default -1
+        config ST7735_DC_PIN
+            int "st7735 dc pin"
+            default -1
+        config ST7735_BLK_PIN
+            int "st7735 blk pin"
+            default -1
+        
+        
+    endif
+    
+endmenu

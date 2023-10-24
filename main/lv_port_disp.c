@@ -150,7 +150,6 @@ static void disp_init(void)
 }
 
 #include "driver/gpio.h"
-
 #include "st7789_driver.h"
 
 bool spi_master_write_colors_map(TFT_t *dev, lv_color_t *color_map, uint16_t size)
