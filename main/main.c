@@ -22,10 +22,14 @@ void app_main(void)
 
     while (1)
     {
-        // ESP_LOGI(TAG, "Free heap memory: %ld bytes", esp_get_free_heap_size());
-        LCD_Fill(st7735, 0, 0, 80, 160, 0xffff);
+
+        st7735_draw_full_screen_by_color(st7735, 0xffff);
         vTaskDelay(1000 / portTICK_PERIOD_MS);
-        LCD_Fill(st7735, 0, 0, 80, 160, 0x0000);
+        st7735_draw_full_screen_by_color(st7735, 0x001f);
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        st7735_draw_full_screen_by_color(st7735, 0x7e0);
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        st7735_draw_full_screen_by_color(st7735, 0xf800);
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }
