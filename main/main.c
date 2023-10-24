@@ -5,7 +5,9 @@
 
 #include "esp_log.h"
 
-const static char *TAG = "fan main";
+#include "st7735.h"
+
+const static char *TAG = "main";
 
 void app_main(void)
 {

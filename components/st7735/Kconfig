@@ -7,12 +7,6 @@ menu "St7735 config"
             Enable st7735 config components
 
     if ST7735_CONFIG
-        config ST7735_SCREEN_LENGHT
-            int "st7735 screen lenght"
-            default -1
-        config ST7735_SCREEN_WIDE
-            int "st7735 screen wide"
-            default -1
         config ST7735_SCREEN_DISPLAY_ANGLE
             int "st7735 screen display angle"
             default -1
