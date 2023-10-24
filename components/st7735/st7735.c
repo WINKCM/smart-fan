@@ -25,6 +25,8 @@ const static char *TAG = "st7735";
 
 #define ST7735_SCREEN_WIDTH 80
 #define ST7735_SCREEN_LENGTH 160
+#define ST7735_SCREEN_X_OFFSET 26
+#define ST7735_SCREEN_Y_OFFSET 1
 
 #define USE_HORIZONTAL 0
 
@@ -42,9 +44,11 @@ st7735_t *st7735_create()
     st7735->screen_buffer = malloc(ST7735_SCREEN_WIDTH * ST7735_SCREEN_LENGTH * 2);
     memset(st7735->screen_buffer, 0, ST7735_SCREEN_WIDTH * ST7735_SCREEN_LENGTH * 2);
 
+    st7735->spi_transaction_is_cmd = 0;
+    st7735->spi_transaction_is_data = 1;
     st7735->spi_device_handle = NULL;
 
-    ESP_LOGI(TAG, "create st7735 screen length %d , st7735 wide %d success ", ST7735_SCREEN_LENGTH, ST7735_SCREEN_WIDTH);
+    ESP_LOGI(TAG, "create st7735 screen  wide %d, length %d  success ", ST7735_SCREEN_WIDTH, ST7735_SCREEN_LENGTH);
 
     return st7735;
 }
@@ -73,14 +77,57 @@ void st7735_hardware_restart()
     vTaskDelay(500 / portTICK_PERIOD_MS);
 }
 
+void st7735_spi_transaction_buffer_init(st7735_t *st7735)
+{
+    for (int i = 0; i < 6; i++)
+        memset(&st7735->spi_transaction[i], 0, sizeof(spi_transaction_t));
+
+    st7735->spi_transaction[0].length = 8;
+    st7735->spi_transaction[0].tx_data[0] = 0x2a;
+    st7735->spi_transaction[0].user = (void *)&st7735->spi_transaction_is_cmd;
+    st7735->spi_transaction[0].flags = SPI_TRANS_USE_TXDATA;
+
+    st7735->spi_transaction[1].length = 8 * 4;
+    st7735->spi_transaction[1].tx_data[0] = 0x00;
+    st7735->spi_transaction[1].tx_data[1] = ST7735_SCREEN_X_OFFSET;
+    st7735->spi_transaction[1].tx_data[2] = 0x00;
+    st7735->spi_transaction[1].tx_data[3] = ST7735_SCREEN_X_OFFSET + ST7735_SCREEN_WIDTH - 1;
+    st7735->spi_transaction[1].user = (void *)&st7735->spi_transaction_is_data;
+    st7735->spi_transaction[1].flags = SPI_TRANS_USE_TXDATA;
+
+    st7735->spi_transaction[2].length = 8;
+    st7735->spi_transaction[2].tx_data[0] = 0x2b;
+    st7735->spi_transaction[2].user = (void *)&st7735->spi_transaction_is_cmd;
+    st7735->spi_transaction[2].flags = SPI_TRANS_USE_TXDATA;
+
+    st7735->spi_transaction[3].length = 8 * 4;
+    st7735->spi_transaction[3].tx_data[0] = 0x00;
+    st7735->spi_transaction[3].tx_data[1] = ST7735_SCREEN_Y_OFFSET;
+    st7735->spi_transaction[3].tx_data[2] = 0x00;
+    st7735->spi_transaction[3].tx_data[3] = ST7735_SCREEN_Y_OFFSET + ST7735_SCREEN_LENGTH - 1;
+    st7735->spi_transaction[3].user = (void *)&st7735->spi_transaction_is_data;
+    st7735->spi_transaction[3].flags = SPI_TRANS_USE_TXDATA;
+
+    st7735->spi_transaction[4].length = 8;
+    st7735->spi_transaction[4].tx_data[0] = 0x2c;
+    st7735->spi_transaction[4].user = (void *)&st7735->spi_transaction_is_cmd;
+    st7735->spi_transaction[4].flags = SPI_TRANS_USE_TXDATA;
+
+    st7735->spi_transaction[5].length = ST7735_SCREEN_WIDTH * ST7735_SCREEN_LENGTH * 2 * 8;
+    st7735->spi_transaction[5].tx_buffer = (void *)st7735->screen_buffer;
+    st7735->spi_transaction[5].user = (void *)&st7735->spi_transaction_is_data;
+}
+
 st7735_error_t st7735_init(st7735_t *st7735)
 {
     if (st7735 == NULL)
         return ST7735_INIT_ERROR;
 
-    bool error = spi_master_init(&st7735->spi_device_handle, (ST7735_SCREEN_LENGTH * ST7735_SCREEN_LENGTH + 5) * 2);
+    bool error = spi_master_init(&st7735->spi_device_handle, (ST7735_SCREEN_LENGTH * ST7735_SCREEN_LENGTH + 5) * 2 * 8);
     if (!error)
         return ST7735_INIT_ERROR;
+
+    st7735_spi_transaction_buffer_init(st7735);
 
     st7735_gpio_init(CONFIG_ST7735_DC_PIN);
     st7735_gpio_init(CONFIG_ST7735_BLK_PIN);
@@ -195,57 +242,30 @@ st7735_error_t st7735_init(st7735_t *st7735)
     return ST7735_OK;
 }
 
-void LCD_Address_Set(st7735_t *st7735, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
+void st7735_refresh_screen(st7735_t *st7735)
 {
-    if (USE_HORIZONTAL == 0)
-    {
-        spi_master_send_cmd(st7735->spi_device_handle, 0x2a); // Display inversion
-        spi_master_write_data(st7735->spi_device_handle, 0x00);
-        spi_master_write_data(st7735->spi_device_handle, x1 + 26);
-        spi_master_write_data(st7735->spi_device_handle, 0x00);
-        spi_master_write_data(st7735->spi_device_handle, x2 + 26);
-        spi_master_send_cmd(st7735->spi_device_handle, 0x2b); // Display inversion
-        spi_master_write_data(st7735->spi_device_handle, 0x00);
-        spi_master_write_data(st7735->spi_device_handle, y1 + 1);
-        spi_master_write_data(st7735->spi_device_handle, 0x00);
-        spi_master_write_data(st7735->spi_device_handle, y2 + 1);
-        spi_master_send_cmd(st7735->spi_device_handle, 0x2c); // Display inversion
-    }
-    // else if (USE_HORIZONTAL == 1)
-    // {
-    //     LCD_WR_REG(0x2a); // 列地址设置
-    //     LCD_WR_DATA(x1 + 26);
-    //     LCD_WR_DATA(x2 + 26);
-    //     LCD_WR_REG(0x2b); // 行地址设置
-    //     LCD_WR_DATA(y1 + 1);
-    //     LCD_WR_DATA(y2 + 1);
-    //     LCD_WR_REG(0x2c); // 储存器写
-    // }
-    // else if (USE_HORIZONTAL == 2)
-    // {
-    //     LCD_WR_REG(0x2a); // 列地址设置
-    //     LCD_WR_DATA(x1 + 1);
-    //     LCD_WR_DATA(x2 + 1);
-    //     LCD_WR_REG(0x2b); // 行地址设置
-    //     LCD_WR_DATA(y1 + 26);
-    //     LCD_WR_DATA(y2 + 26);
-    //     LCD_WR_REG(0x2c); // 储存器写
-    // }
-    // else
-    // {
-    //     LCD_WR_REG(0x2a); // 列地址设置
-    //     LCD_WR_DATA(x1 + 1);
-    //     LCD_WR_DATA(x2 + 1);
-    //     LCD_WR_REG(0x2b); // 行地址设置
-    //     LCD_WR_DATA(y1 + 26);
-    //     LCD_WR_DATA(y2 + 26);
-    //     LCD_WR_REG(0x2c); // 储存器写
-    // }
+    spi_device_acquire_bus(st7735->spi_device_handle, portMAX_DELAY);
+
+    spi_master_send_cmd(st7735->spi_device_handle, 0x2a);
+    spi_master_write_data(st7735->spi_device_handle, 0x00);
+    spi_master_write_data(st7735->spi_device_handle, ST7735_SCREEN_X_OFFSET);
+    spi_master_write_data(st7735->spi_device_handle, 0x00);
+    spi_master_write_data(st7735->spi_device_handle, ST7735_SCREEN_X_OFFSET + ST7735_SCREEN_WIDTH - 1);
+    spi_master_send_cmd(st7735->spi_device_handle, 0x2b);
+    spi_master_write_data(st7735->spi_device_handle, 0x00);
+    spi_master_write_data(st7735->spi_device_handle, ST7735_SCREEN_Y_OFFSET);
+    spi_master_write_data(st7735->spi_device_handle, 0x00);
+    spi_master_write_data(st7735->spi_device_handle, ST7735_SCREEN_Y_OFFSET + ST7735_SCREEN_LENGTH - 1);
+    spi_master_send_cmd(st7735->spi_device_handle, 0x2c);
+
+    esp_err_t esp_error = spi_device_polling_transmit(st7735->spi_device_handle, &st7735->spi_transaction[5]);
+    assert(esp_error == ESP_OK);
+
+    spi_device_release_bus(st7735->spi_device_handle);
 }
 
-void LCD_Fill(st7735_t *st7735, uint16_t xsta, uint16_t ysta, uint16_t xend, uint16_t yend, uint16_t color)
+void st7735_draw_full_screen_by_color(st7735_t *st7735, uint16_t color)
 {
-    LCD_Address_Set(st7735, xsta, ysta, xend - 1, yend - 1); // 设置显示范围
     uint8_t data_buffer[2];
     data_buffer[0] = color >> 8 & 0xff;
     data_buffer[1] = color & 0xff;
@@ -256,9 +276,5 @@ void LCD_Fill(st7735_t *st7735, uint16_t xsta, uint16_t ysta, uint16_t xend, uin
         st7735->screen_buffer[i + 1] = data_buffer[1];
     }
 
-    spi_master_write_data_buffer(st7735->spi_device_handle, st7735->screen_buffer, ST7735_SCREEN_WIDTH * ST7735_SCREEN_LENGTH * 2);
-}
-
-void st7735_draw_full(st7735_t *st7735, uint16_t color)
-{
+    st7735_refresh_screen(st7735);
 }
