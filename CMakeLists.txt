@@ -4,7 +4,5 @@
 # CMakeLists in this exact order for cmake to work correctly
 cmake_minimum_required(VERSION 3.16)
 
-list(APPEND EXTRA_COMPONENT_DIRS ../block-driver-components/components/st7789)
-
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 project(main)

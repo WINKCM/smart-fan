@@ -16,7 +16,7 @@ void spi_set_dc_callback(spi_transaction_t *spi_transaction)
     gpio_set_level(CONFIG_ST7735_DC_PIN, *st7735_dc_state);
 }
 
-bool spi_master_init(spi_device_handle_t *spi_device_handle)
+bool spi_master_init(spi_device_handle_t *spi_device_handle, int spi_max_send_data_lenth)
 {
     spi_bus_config_t spi_bus_config = {
         .miso_io_num = -1,
@@ -24,7 +24,7 @@ bool spi_master_init(spi_device_handle_t *spi_device_handle)
         .sclk_io_num = CONFIG_ST7735_SCL_PIN,
         .quadwp_io_num = -1,
         .quadhd_io_num = -1,
-        .max_transfer_sz = CONFIG_ST7735_SCREEN_LENGHT * CONFIG_ST7735_SCREEN_WIDE * 2};
+        .max_transfer_sz = spi_max_send_data_lenth};
 
     spi_device_interface_config_t spi_device_interface_config = {
         .flags = SPI_DEVICE_NO_DUMMY,
@@ -54,7 +54,7 @@ bool spi_master_init(spi_device_handle_t *spi_device_handle)
     return true;
 }
 
-void spi_master_send_cmd(spi_device_handle_t spi_device_handle, uint8_t cmd, bool keep_cs_active)
+void spi_master_send_cmd(spi_device_handle_t spi_device_handle, uint8_t cmd)
 {
     spi_transaction_t spi_transaction;
     memset(&spi_transaction, 0, sizeof(spi_transaction_t));
@@ -63,15 +63,13 @@ void spi_master_send_cmd(spi_device_handle_t spi_device_handle, uint8_t cmd, boo
     spi_transaction.tx_buffer = &cmd;
     int cs_state = 0;
     spi_transaction.user = (void *)&cs_state;
-    if (keep_cs_active)
-        spi_transaction.flags = SPI_TRANS_CS_KEEP_ACTIVE;
 
     esp_err_t error = spi_device_polling_transmit(spi_device_handle, &spi_transaction);
     if (error != ESP_OK)
         ESP_LOGE(TAG, "spi master send cmd error");
 }
 
-void spi_master_write_data(spi_device_handle_t spi_device_handle, uint8_t *write_data_buffer, int write_data_buffer_length, bool keep_cs_active)
+void spi_master_write_data_buffer(spi_device_handle_t spi_device_handle, uint8_t *write_data_buffer, int write_data_buffer_length)
 {
     if (write_data_buffer_length <= 0)
         return;
@@ -83,10 +81,13 @@ void spi_master_write_data(spi_device_handle_t spi_device_handle, uint8_t *write
     spi_transaction.tx_buffer = write_data_buffer;
     int cs_state = 1;
     spi_transaction.user = (void *)&cs_state;
-    if (keep_cs_active)
-        spi_transaction.flags = SPI_TRANS_CS_KEEP_ACTIVE;
 
     esp_err_t error = spi_device_polling_transmit(spi_device_handle, &spi_transaction);
     if (error != ESP_OK)
         ESP_LOGE(TAG, "spi master send data error");
+}
+
+void spi_master_write_data(spi_device_handle_t spi_device_handle, uint8_t write_data)
+{
+    spi_master_write_data_buffer(spi_device_handle, &write_data, 1);
 }
