@@ -5,31 +5,28 @@
 
 #include "esp_log.h"
 
+#include "bdc_motor.h"
+#include "pcnt_driver.h"
 #include "st7735.h"
 
 const static char *TAG = "main";
 
 void app_main(void)
 {
+    bdc_motor_t *bdc_motor = bdc_motor_create(26, 0, 27, 1);
+    bdc_motor_set_motor_speed(bdc_motor, 0);
 
-    st7735_t *st7735 = st7735_create();
-    if (st7735 == NULL)
-    {
-        ESP_LOGE(TAG, "st7735 create error");
-    }
-
-    st7735_init(st7735);
+    bdc_pcnt_driver_t *bdc_pcnt_driver = bdc_pcnt_create(15, 13);
+    int pcnt_count = 0;
 
     while (1)
     {
+        // ESP_LOGI(TAG, "Free heap memory: %ld bytes", esp_get_free_heap_size());
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        pcnt_count = bdc_pcnt_get_count(bdc_pcnt_driver);
+        bdc_motor_set_motor_speed(bdc_motor, (pcnt_count * 4096) / 100);
+        // bdc_motor_set_motor_speed(bdc_motor, 4096);
 
-        st7735_draw_full_screen_by_color(st7735, 0xffff);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-        st7735_draw_full_screen_by_color(st7735, 0x001f);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-        st7735_draw_full_screen_by_color(st7735, 0x7e0);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-        st7735_draw_full_screen_by_color(st7735, 0xf800);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        ESP_LOGI(TAG, "pcnt : %d", pcnt_count);
     }
 }
