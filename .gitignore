@@ -3,5 +3,6 @@
 .vscode
 build
 debug
+managed_components
 
 
