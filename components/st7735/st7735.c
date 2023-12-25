@@ -278,3 +278,9 @@ void st7735_draw_full_screen_by_color(st7735_t *st7735, uint16_t color)
 
     st7735_refresh_screen(st7735);
 }
+
+void st7735_draw_screen_by_lvgl(st7735_t *st7735, void *color_buffer, int colcor_buffer_size)
+{
+    memcpy(st7735->screen_buffer, color_buffer, colcor_buffer_size);
+    st7735_refresh_screen(st7735);
+}

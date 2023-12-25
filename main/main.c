@@ -5,6 +5,9 @@
 
 #include "esp_log.h"
 
+#include "lvgl.h"
+
+#include "smart_fan_lvgl.h"
 #include "bdc_motor.h"
 #include "pcnt_driver.h"
 #include "st7735.h"
@@ -18,18 +21,24 @@ void app_main(void)
 
     // bdc_pcnt_driver_t *bdc_pcnt_driver = bdc_pcnt_create(15, 13);
     // int pcnt_count = 0;
-    st7735_t *st7735 = st7735_create();
-    st7735_init(st7735);
-    st7735_draw_full_screen_by_color(st7735, 0x0000);
+    // st7735_t *st7735 = st7735_create();
+    // st7735_init(st7735);
+    // st7735_draw_full_screen_by_color(st7735, 0x0000);
+
+    lv_init();
+    lv_port_disp_init();
 
     while (1)
     {
-        st7735_draw_full_screen_by_color(st7735, 0x0000);
+        vTaskDelay(10 / portTICK_PERIOD_MS);
+        // lv_tick_inc(10);
+        lv_task_handler();
+        // st7735_draw_full_screen_by_color(st7735, 0x0000);
 
         // ESP_LOGI(TAG, "Free heap memory: %ld bytes", esp_get_free_heap_size());
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-        st7735_draw_full_screen_by_color(st7735, 0xaf7d);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        // vTaskDelay(1000 / portTICK_PERIOD_MS);
+        // st7735_draw_full_screen_by_color(st7735, 0xaf7d);
+        // vTaskDelay(1000 / portTICK_PERIOD_MS);
         // pcnt_count = bdc_pcnt_get_count(bdc_pcnt_driver);
         // bdc_motor_set_motor_speed(bdc_motor, (pcnt_count * 4096) / 100);
         // bdc_motor_set_motor_speed(bdc_motor, 4096);

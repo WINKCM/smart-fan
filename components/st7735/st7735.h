@@ -37,7 +37,7 @@ st7735_error_t st7735_init(st7735_t *st7735);
 
 void st7735_draw_full_screen_by_color(st7735_t *st7735, uint16_t color);
 void st7735_draw_pixel(st7735_t *st7735, int x, int y, uint16_t color);
-void st7735_draw_screen_by_lvgl(st7735_t *st7735);
+void st7735_draw_screen_by_lvgl(st7735_t *st7735, void *color_buffer, int colcor_buffer_size);
 void st7735_refresh_screen(st7735_t *st7735);
 
 #endif
