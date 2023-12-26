@@ -216,14 +216,15 @@ st7735_error_t st7735_init(st7735_t *st7735)
     spi_master_send_cmd(st7735->spi_device_handle, 0x3A);
     spi_master_write_data(st7735->spi_device_handle, 0x05);
     spi_master_send_cmd(st7735->spi_device_handle, 0x36);
-    if (USE_HORIZONTAL == 0)
-        spi_master_write_data(st7735->spi_device_handle, 0x08);
-    else if (USE_HORIZONTAL == 1)
-        spi_master_write_data(st7735->spi_device_handle, 0xC8);
-    else if (USE_HORIZONTAL == 2)
-        spi_master_write_data(st7735->spi_device_handle, 0x78);
-    else
-        spi_master_write_data(st7735->spi_device_handle, 0xA8);
+    spi_master_write_data(st7735->spi_device_handle, 0x08);
+    // if (USE_HORIZONTAL == 0)
+    //     spi_master_write_data(st7735->spi_device_handle, 0x08);
+    // else if (USE_HORIZONTAL == 1)
+    //     spi_master_write_data(st7735->spi_device_handle, 0xC8);
+    // else if (USE_HORIZONTAL == 2)
+    //     spi_master_write_data(st7735->spi_device_handle, 0x78);
+    // else if (USE_HORIZONTAL == 3)
+    //     spi_master_write_data(st7735->spi_device_handle, 0xA8);
     spi_master_send_cmd(st7735->spi_device_handle, 0x21); // Display inversion
     spi_master_send_cmd(st7735->spi_device_handle, 0x29); // Display on
     spi_master_send_cmd(st7735->spi_device_handle, 0x2A); // Set Column Address
@@ -279,8 +280,22 @@ void st7735_draw_full_screen_by_color(st7735_t *st7735, uint16_t color)
     st7735_refresh_screen(st7735);
 }
 
+uint16_t st7735_draw_screen_by_lvgl_buffer[160 * 80];
+
 void st7735_draw_screen_by_lvgl(st7735_t *st7735, void *color_buffer, int colcor_buffer_size)
 {
-    memcpy(st7735->screen_buffer, color_buffer, colcor_buffer_size);
+    memcpy(st7735_draw_screen_by_lvgl_buffer, color_buffer, colcor_buffer_size);
+
+    for (int x = 0; x < 80; x++)
+    {
+        for (int y = 0; y < 160; y++)
+        {
+            memcpy(st7735->screen_buffer + (y * 80 + (79 - x)) * 2, st7735_draw_screen_by_lvgl_buffer + (x * 160 + y), 2);
+            // memcpy(st7735->screen_buffer + (y * 80 + x) * 2, st7735_draw_screen_by_lvgl_buffer + (x * 160 + y), 2);
+        }
+    }
+
+    // memcpy(st7735->screen_buffer, st7735_draw_screen_by_lvgl_buffer, colcor_buffer_size);
+    // memcpy(st7735->screen_buffer, color_buffer, colcor_buffer_size);
     st7735_refresh_screen(st7735);
 }
