@@ -30,6 +30,8 @@ const static char *TAG = "st7735";
 
 #define USE_HORIZONTAL 0
 
+uint16_t st7735_draw_screen_by_lvgl_buffer[ST7735_SCREEN_LENGTH * ST7735_SCREEN_WIDTH];
+
 st7735_t *st7735_create()
 {
     if (CONFIG_ST7735_SDA_PIN == -1 || CONFIG_ST7735_SCL_PIN == -1 || CONFIG_ST7735_CS_PIN == -1 || CONFIG_ST7735_RES_PIN == -1 || CONFIG_ST7735_DC_PIN == -1)
@@ -280,22 +282,18 @@ void st7735_draw_full_screen_by_color(st7735_t *st7735, uint16_t color)
     st7735_refresh_screen(st7735);
 }
 
-uint16_t st7735_draw_screen_by_lvgl_buffer[160 * 80];
-
-void st7735_draw_screen_by_lvgl(st7735_t *st7735, void *color_buffer, int colcor_buffer_size)
+void st7735_draw_screen_by_lvgl(st7735_t *st7735, void *color_buffer, int screen_width, int screen_height, st7735_display_angle_t display_angle)
 {
-    memcpy(st7735_draw_screen_by_lvgl_buffer, color_buffer, colcor_buffer_size);
+    int color_buffer_size = screen_width * screen_height * 2;
 
-    for (int x = 0; x < 80; x++)
+    if (display_angle == ST7735_DISPLAY_ANGLER_90 || display_angle == ST7735_DISPLAY_ANGLER_270)
     {
-        for (int y = 0; y < 160; y++)
-        {
-            memcpy(st7735->screen_buffer + (y * 80 + (79 - x)) * 2, st7735_draw_screen_by_lvgl_buffer + (x * 160 + y), 2);
-            // memcpy(st7735->screen_buffer + (y * 80 + x) * 2, st7735_draw_screen_by_lvgl_buffer + (x * 160 + y), 2);
-        }
+        memcpy(st7735_draw_screen_by_lvgl_buffer, color_buffer, color_buffer_size);
+        for (int x = 0; x < screen_height; x++)
+            for (int y = 0; y < screen_width; y++)
+                memcpy(st7735->screen_buffer + (y * screen_height + (79 - x)) * 2, st7735_draw_screen_by_lvgl_buffer + (x * screen_width + y), 2);
     }
-
-    // memcpy(st7735->screen_buffer, st7735_draw_screen_by_lvgl_buffer, colcor_buffer_size);
-    // memcpy(st7735->screen_buffer, color_buffer, colcor_buffer_size);
+    else
+        memcpy(st7735->screen_buffer, color_buffer, color_buffer_size);
     st7735_refresh_screen(st7735);
 }

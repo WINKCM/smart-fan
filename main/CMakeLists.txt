@@ -1,7 +1,16 @@
 idf_component_register(SRC_DIRS "."
-                                "./pods/fan"
+                                # "./pods/fan"
                                 "./pods/lvgl_ui/"
+                                "./pods/lvgl_ui/custom/"
+                                "./pods/lvgl_ui/generated/"
+                                "./pods/lvgl_ui/generated/guider_customer_fonts/"
+                                "./pods/lvgl_ui/generated/guider_fonts/"
+                                
                     INCLUDE_DIRS "."
-                                 "./pods/fan"
+                                #  "./pods/fan/"
                                  "./pods/lvgl_ui/"
+                                 "./pods/lvgl_ui/custom/"
+                                 "./pods/lvgl_ui/generated/"
+                                 "./pods/lvgl_ui/generated/guider_customer_fonts/"
+                                 "./pods/lvgl_ui/generated/guider_fonts/"
                     )

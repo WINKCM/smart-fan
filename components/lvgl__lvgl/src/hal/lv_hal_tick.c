@@ -16,7 +16,7 @@
 /*********************
  *      DEFINES
  *********************/
-#define LV_TICK_CUSTOM_INCLUDE "esp_timer.h"
+// #define LV_TICK_CUSTOM_INCLUDE "esp_timer.h"
 #define LV_TICK_CUSTOM_SYS_TIME_EXPR ((esp_timer_get_time() / 1000LL))
 /**********************
  *      TYPEDEFS
