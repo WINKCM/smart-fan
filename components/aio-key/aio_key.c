@@ -13,7 +13,7 @@
 #define AIO_KEY_MAX_LONG_PRESS_TRIGGER_TIME_MS 5000
 #define AIO_KEY_DEFAULT_LONG_PRESS_TRIGGER_TIME_MS 2000
 
-#define AIO_KEY_MIN_SHORT_PRESS_TRIGGER_TIME_MS 100
+#define AIO_KEY_MIN_SHORT_PRESS_TRIGGER_TIME_MS 20
 #define AIO_KEY_MAX_SHORT_PRESS_TRIGGER_TIME_MS 500
 #define AIO_KEY_DEFAULT_SHORT_PRESS_TRIGGER_TIME_MS 200
 
@@ -47,6 +47,7 @@ static void button_long_press_start_callback(void *button_handle, void *user_dat
 
     aio_key->is_power_on == true ? led_control_switch_led_state(aio_key->led_control_handle, LED_CONTROL_STATE_ON)
                                  : led_control_switch_led_state(aio_key->led_control_handle, LED_CONTROL_STATE_OFF);
+    ESP_LOGI(TAG, "power set");
 }
 
 aio_key_handle_t aio_key_create(aio_key_config_t aio_key_config)
@@ -56,16 +57,19 @@ aio_key_handle_t aio_key_create(aio_key_config_t aio_key_config)
 
     aio_key_t *aio_key = malloc(sizeof(aio_key_t));
 
-    aio_key->led_control_handle = led_control_create(aio_key_config.led_control_config);
-    if (aio_key->led_control_handle == NULL)
+    if (aio_key_config.led_control_enable)
     {
-        ESP_LOGE(TAG, "LED control config error");
-        free(aio_key);
-        aio_key = NULL;
-        return NULL;
-    }
+        aio_key->led_control_handle = led_control_create(aio_key_config.led_control_config);
+        if (aio_key->led_control_handle == NULL)
+        {
+            ESP_LOGW(TAG, "LED control config don't set");
+            // free(aio_key);
+            // aio_key = NULL;
+            // return NULL;
+        }
 
-    led_control_task_start(aio_key->led_control_handle);
+        led_control_task_start(aio_key->led_control_handle);
+    }
 
     aio_key->key_gpio_num = aio_key_config.key_gpio_num;
     aio_key->key_keep_gpio_num = aio_key_config.key_keep_gpio_num;
