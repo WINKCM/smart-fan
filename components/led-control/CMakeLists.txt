@@ -1,0 +1,10 @@
+idf_component_register(SRC_DIRS "."
+                                "./handler/"
+                                "./service/"
+                                "./task/"
+                    INCLUDE_DIRS "."
+                                 "./handler/"
+                                 "./led_control_mode/"
+                                 "./service/"
+                                 "./task/"
+                    REQUIRES high-resolution-timer)

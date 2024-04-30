@@ -1,15 +1,27 @@
 dependencies:
+  espressif/button:
+    component_hash: 1f5297fe16f0ee988dbb14b6f4c91782fe2baf85025bb15cc1e0093edd3fb2ee
+    source:
+      service_url: https://api.components.espressif.com/
+      type: service
+    version: 3.2.0
+  espressif/cmake_utilities:
+    component_hash: 351350613ceafba240b761b4ea991e0f231ac7a9f59a9ee901f751bddc0bb18f
+    source:
+      service_url: https://api.components.espressif.com/
+      type: service
+    version: 0.5.3
   idf:
     component_hash: null
     source:
       type: idf
-    version: 5.0.4
-  lvgl/lvgl:
-    component_hash: 948bff879a345149b83065535bbc4a026ce9f47498a22881e432a264b9098015
+    version: 5.1.2
+  lvgl__lvgl:
+    component_hash: null
     source:
-      service_url: https://api.components.espressif.com/
-      type: service
+      path: /home/aibo/dev/smart-fan/components/lvgl__lvgl
+      type: local
     version: 8.3.11
-manifest_hash: d8ef04031d0ee62a44c8f371af4d488c1973a967ebcccf1ac2dc64eb8d46ac53
+manifest_hash: b0670b6c570ec8cca9a49d6d312314cea9858c46157c9d77af548a781c42b1fa
 target: esp32
 version: 1.0.0
