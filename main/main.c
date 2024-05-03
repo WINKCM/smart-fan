@@ -47,11 +47,16 @@ void app_main(void)
     iot_button_register_cb(button_handle, BUTTON_LONG_PRESS_START, button_long_press_down_cb, NULL);
     iot_button_register_cb(button_handle, BUTTON_PRESS_DOWN, button_press_down_cb, NULL);
 
+    pwm_init(NULL, FAN_PWM_GPIO);
+    pwm_set_duty(NULL, 0);
+
     lv_init();
     lv_port_disp_init();
 
     setup_ui(&guider_ui);
     lv_label_set_text(guider_ui.screen_label_1, "0");
+    lv_label_set_text(guider_ui.screen_label_2, "24:00");
+    lv_bar_set_value(guider_ui.screen_bar_1, 20, LV_ANIM_OFF);
 
     while (1)
     {
