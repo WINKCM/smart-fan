@@ -15,13 +15,13 @@ dependencies:
     component_hash: null
     source:
       type: idf
-    version: 5.1.2
-  lvgl__lvgl:
-    component_hash: null
+    version: 5.2.1
+  lvgl/lvgl:
+    component_hash: d7c1ac037ae6e85d94897f807d6e7ba0946a83e720074fc95a4f6241da9f9f53
     source:
-      path: /home/aibo/dev/smart-fan/components/lvgl__lvgl
-      type: local
-    version: 8.3.11
-manifest_hash: b0670b6c570ec8cca9a49d6d312314cea9858c46157c9d77af548a781c42b1fa
+      service_url: https://api.components.espressif.com/
+      type: service
+    version: 8.4.0
+manifest_hash: 8e6d68671916b4f481a272a0ee068938263abeb0dffb786115c86aa64edebccc
 target: esp32
 version: 1.0.0
